@@ -1,0 +1,10 @@
+energy_based_checkpoint\\
+entropy_based_checkpoint\\
+energy_fuzzy_checkpoint\\
+entropy_fuzzy_checkpoint\\
+fuzzy_based_checkpoint\\
+__pycache__\\
+sample\\
+example_test\\
+sample
+example_test

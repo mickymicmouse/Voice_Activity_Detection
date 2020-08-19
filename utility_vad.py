@@ -152,16 +152,6 @@ def fuzzy(predict_non, noise, label, zeros, thres):
     
     data_pu=np.array(predict_non).T
     final=skfuzzy.cmeans(data_pu,2,2,0.00000000001,2000) 
-
-    plt.figure(figsize=(12,6))
-    plt.grid()
-    plt.title("fuzzy clustering")
-    plt.xlabel("Entropy value")
-    plt.ylabel("Amplitude")
-    plt.scatter(data_pu[0],data_pu[1],color="R", label="sample")
-    plt.scatter(final[0][:,0],final[0][:,1],color="Black", label="center")
-    plt.legend()
-    plt.show()
     
     labels=label.copy()
     clustering=final[1]
@@ -182,12 +172,7 @@ def fuzzy(predict_non, noise, label, zeros, thres):
     for i in noise_1:
         if i!=0:
             nono.append(i)
-    plt.figure(figsize=(20,2))
-    plt.grid()
-    plt.title("vad label")
-    plt.plot(labels)
 
-    plt.show()
     nono=np.array(nono)
     return nono, labels
 
@@ -217,6 +202,7 @@ def save_image1(src,dest,file_name, title, xlabel, ylabel):
     plt.grid()
     plt.plot(src)
     plt.savefig(os.path.join(dest,file_name))
+    plt.close()
 
 def save_image2(src,src2,dest,file_name, title, xlabel, ylabel):
     plt.figure(figsize=(12,2))
@@ -227,3 +213,4 @@ def save_image2(src,src2,dest,file_name, title, xlabel, ylabel):
     plt.plot(src)
     plt.plot(src2)
     plt.savefig(os.path.join(dest,file_name))
+    plt.close()

@@ -11,13 +11,13 @@ import librosa
 import librosa.display
 import os
 import matplotlib.pyplot as plt
-import random
 import skfuzzy
 import numpy.matlib
 from sklearn.metrics import accuracy_score
 import sklearn.metrics as sk
 import time
 
+# 폴더 안에 있는 사운드 파일 받아오기
 def voice_get(sound_path):
     sound_folder=os.listdir(sound_path)
     sound_list=[]
@@ -25,9 +25,7 @@ def voice_get(sound_path):
     for i in sound_folder:
         path=sound_path+'\\'+i
         sound_list.append(path)
-
-    
-
+        
     return sound_list
 
 

@@ -22,9 +22,11 @@ from sklearn.metrics import accuracy_score
 import sklearn.metrics as sk
 import time
 import argparse
-os.chdir(r"C:\\VAD")
+#os.chdir(r"C:\\VAD")
 from utility_vad import *
 import json
+
+
 
 def energy_options():
     
@@ -32,12 +34,16 @@ def energy_options():
     
     parser.add_argument('--noise_path', default = r'C:\\Users\\seungjun\\Desktop\\noisy_testset_wav', type = str)
     parser.add_argument('--clean_path', default = r'C:\\Users\\seungjun\\Desktop\\clean_testset_wav', type = str)
-    parser.add_argument('--checkpoint', default = r'C:\\VAD\\energy_fuzzy_checkpoint')
-    parser.add_argument('--clean_th', default = 0.01, type = float, help='clean threshold')
+    parser.add_argument('--checkpoint', default = r'C:\\VAD\\entropy_fuzzy_checkpoint')
+    parser.add_argument('--clean_th', default = 0.015, type = float, help='clean threshold')
     parser.add_argument('--sr', default = 16000, type = int)
     parser.add_argument('--start_th', default = 10, type = int)
     parser.add_argument('--finish_th', default = 110, type = int)
-    parser.add_argument('--ener_interval', default = 100, type = int)
+    parser.add_argument('--ener_th', default = 50, type = int)
+    parser.add_argument('--entropy_interval', default = 50, type = int)
+    parser.add_argument('--entropy_th', default = 50, type = int)
+    parser.add_argument('--ener_interval', default = 50, type = int)
+    parser.add_argument('--interval', default = 10, type = int)
 
 
     args = parser.parse_args()
@@ -54,7 +60,7 @@ def main(opt):
     start=time.time()
     envoice_path=(args.clean_path)
     ennoise_path=(args.noise_path)
-    
+    vad_df = []
     envo=voice_get(envoice_path)
     enno=voice_get(ennoise_path)
 
@@ -93,13 +99,15 @@ def main(opt):
                     speech_smo.append(1)
                 else:
                     speech_smo.append(0)
-    
+                    
+        real_speech_segment = np.count_nonzero(speech_smo)
+        real_nonspeech_segment = len(speech_smo) - real_speech_segment    
         # 정답 label 도출
     
         print(str(envo[k].split("\\")[-1])+" data is loaded")
         result_name = envo[k].split("\\")[-1]+".txt"
         f=open(os.path.join(args.checkpoint,result_name),'w', encoding='utf-8')
-        for h in range(args.start_th,args.finish_th,10):
+        for h in range(args.start_th,args.finish_th,1):
             lab, ener =cal_ener(enn, args.ener_interval, h)
             count=[]
             
@@ -123,7 +131,10 @@ def main(opt):
                     else:
                         count.append(0)
 
-
+            vad_speech_segment = np.count_nonzero(count)
+            vad_nonspeech_segment = len(count) - vad_speech_segment
+            variable = str(envo[k].split("\\")[-1]) +"__"+ str(h)
+            vad_df.append([variable, count])
     
         #정확도 검증 
             result_prob=[]
@@ -135,13 +146,43 @@ def main(opt):
             f.write(str(prob[1])+" ")
             f.write(str(prob[2])+" ")
             f.write(str(prob[3])+" ")
-            f.writelines()
+            f.write(str(real_speech_segment)+" ")
+            f.write(str(real_nonspeech_segment)+" ")
+            f.write(str(vad_speech_segment)+" ")
+            f.write(str(vad_nonspeech_segment)+" ")
+            f.write("\n")
+            
+            env_vad=np.zeros(len(env))
+            enn_vad=np.zeros(len(enn))
+            for i in range(len(count)):
+                if count[i] == 0:
+                    env_vad[i]=-1000
+                    enn_vad[i]=-1000
+                else:
+                    env_vad[i]=env[i]
+                    enn_vad[i]=enn[i]
+                
+            env_vad=env_vad[env_vad!=-1000]
+            enn_vad=enn_vad[enn_vad!=-1000]
+            if not os.path.isdir(os.path.join(args.checkpoint,"result")):
+                os.mkdir(os.path.join(args.checkpoint,'result'))
+            if not os.path.isdir(os.path.join(args.checkpoint,"result","clean")):
+                os.mkdir(os.path.join(args.checkpoint,'result','clean'))
+            if not os.path.isdir(os.path.join(args.checkpoint,"result","noisy")):
+                os.mkdir(os.path.join(args.checkpoint,'result','noisy'))
+            wav_name = str(h)+"_"+envo[k].split("\\")[-1]
+            librosa.output.write_wav(os.path.join(args.checkpoint,'result','noisy',wav_name),enn_vad, 16000)
+            librosa.output.write_wav(os.path.join(args.checkpoint,'result','clean',wav_name),env_vad, 16000)
+            
             
             file_name = "vad_"+str(h)+"_"+envo[k].split("\\")[-1]+".png"
             save_image2(count, env, args.checkpoint, file_name, title = "vad label & audio signal", xlabel="time", ylabel = "Amplitude & label")
-        file_name2 = "energy_"+envo[k].split("\\")[-1]+".png"
-        save_image1(src=ener, dest = args.checkpoint, file_name=file_name2,title = "Energy", xlabel = "time", ylabel = "Energy")
+        #file_name2 = "energy_"+envo[k].split("\\")[-1]+".png"
+        #save_image1(src=ener, dest = args.checkpoint, file_name=file_name2,title = "Energy", xlabel = "time", ylabel = "Energy")
         f.close()
+
+    vad_df = pd.DataFrame(vad_df)
+    vad_df.to_csv(os.path.join(args.checkpoint, "VAD_result.csv"))
         
 if __name__=='__main__':
     args = energy_options()
