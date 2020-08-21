@@ -23,6 +23,9 @@ from utility_vad import *
 import json
 import pandas as pd
 
+
+#envo = [x for x in envo if x.endswith('.wav')]
+
 def energy_options():
     
     parser=argparse.ArgumentParser()

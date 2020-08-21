@@ -1,0 +1,3 @@
+under 2 sample mean is 2.469 and std is 0.89758
+between sample mean is 2.548 and std is 0.89057
+over 10 sample mean is 2.518 and std is 0.88389

@@ -13,6 +13,6 @@ thres = ['under_2','over_10','between']
 
 for i in file_entropy:
     for j in thres:
-        operation = "python "+i+" --noise_path C:\\VAD\\sample\\"+j+"\\noisy_testset_wav --clean_path C:\\VAD\\sample\\"+j+"\\clean_testset_wav --start_th 10 --finish_th 110 --interval 10 --checkpoint C:\\VAD\\"+str(i.split('.')[0])+"_"+j+""
+        operation = "python "+i+" --noise_path C:\\VAD\\sample\\"+j+"\\noisy_testset_wav --clean_path C:\\VAD\\sample\\"+j+"\\clean_testset_wav --start_th 90 --finish_th 100 --interval 1 --checkpoint C:\\VAD\\"+str(i.split('.')[0])+"_"+j+"_detail"
         os.system(operation)
     
